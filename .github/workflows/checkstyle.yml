@@ -1,6 +1,13 @@
 name: "Checkstyle"
 
-on: pull_request
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: [ main ]
+  schedule:
+    - cron: '34 8 * * 1'
 
 jobs:
   checkstyle:
@@ -13,3 +20,4 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
           level: warning
+          workdir: src/main/java
