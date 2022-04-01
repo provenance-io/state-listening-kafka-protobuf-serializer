@@ -1,2 +1,3 @@
-# state-listening-protobuf-kafka-serdes
-Protobuf Kafka serializer/deserializer for blockchain state listening
+# state-listening-kafka-protobuf-serializer
+Kafka Protobuf serializer for Provenance blockchain state listening
+
