@@ -13,9 +13,28 @@ gradle-app.setting
 # # Work around https://youtrack.jetbrains.com/issue/IDEA-116898
 # gradle/wrapper/gradle-wrapper.properties
 
+# Eclipse
+.project
+.classpath
+
 # IntelliJ
-*.iml
 *.ipr
+*.iml
 *.iws
 .idea
+.datastore
+.settings
 
+# Mac
+.DS_Store
+
+# VS Code
+.history/
+.vscode/
+__debug_bin
+
+# direnv setup
+.envrc
+
+# VIM
+*.swp
