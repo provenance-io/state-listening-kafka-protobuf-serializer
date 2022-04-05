@@ -58,7 +58,7 @@ public class Application {
 
         Runtime.getRuntime().addShutdownHook(new Thread(consumerApplication::shutdown));
 
-        consumerApplication.runConsume(new JsonToProtobufRecordsHandler(producer));
+        consumerApplication.runConsume(new ProtobufRecordsHandler(producer));
     }
 
 }

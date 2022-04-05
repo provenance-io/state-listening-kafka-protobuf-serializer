@@ -1,37 +1,36 @@
 package io.provenance.statelistening.kafka.protobuf.serializer;
 
 import com.google.protobuf.Message;
-import com.google.protobuf.util.JsonFormat;
 import cosmos.base.store.v1beta1.Listening;
+import network.cosmos.listening.plugins.kafka.service.MsgKey;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.curioswitch.common.protobuf.json.MessageMarshaller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tendermint.abci.Types;
 
-public class JsonToProtobufRecordsHandler implements ConsumerRecordsHandler<byte[], byte[]> {
+/**
+ * Converts Protobuf JSON binary data to Protobuf Message(s).
+ */
+public class ProtobufRecordsHandler implements ConsumerRecordsHandler<byte[], byte[]> {
 
-    private static final Logger logger = LoggerFactory.getLogger(JsonToProtobufRecordsHandler.class);
-    private static final MessageMarshaller marshaller = MessageMarshaller.builder()
-            .register(Types.RequestBeginBlock.getDefaultInstance())
-            .register(Types.ResponseBeginBlock.getDefaultInstance())
-            .register(Types.RequestEndBlock.getDefaultInstance())
-            .register(Types.ResponseEndBlock.getDefaultInstance())
-            .register(Types.RequestDeliverTx.getDefaultInstance())
-            .register(Types.ResponseDeliverTx.getDefaultInstance())
-            .register(Listening.StoreKVPair.getDefaultInstance())
-            .register(MsgKey.getDefaultInstance())
-            .build();
+    private static final Logger logger = LoggerFactory.getLogger(ProtobufRecordsHandler.class);
     private final Producer<Message, Message> producer;
     private final String topicPrefix = "proto-";
 
-    public JsonToProtobufRecordsHandler(Producer<Message, Message> producer) {
+    /** */
+    public ProtobufRecordsHandler(Producer<Message, Message> producer) {
         this.producer = producer;
     }
 
+    /**
+     * Convert messages to protobuf messages and serialize to Kafka.
+     *
+     * @param consumerRecords Kafka messages
+     * @throws ConsumerRecordsHandlerException is thrown when errors occur.
+     */
     @Override
     public void process(ConsumerRecords<byte[], byte[]> consumerRecords) throws ConsumerRecordsHandlerException {
         consumerRecords.forEach(record -> {
@@ -64,47 +63,49 @@ public class JsonToProtobufRecordsHandler implements ConsumerRecordsHandler<byte
         STATE_CHANGE
     }
 
+    /**
+     * Unmarshall Protobuf JSON binary data to a Protobuf Message.
+     *
+     * @param record Kafka consumed record
+     * @return ProtoRecord
+     */
     ProtoRecord unmarshall(ConsumerRecord<byte[], byte[]> record) {
         try {
-            final MsgKey.Builder keyBuilder = MsgKey.newBuilder();
-            marshaller.mergeValue(record.key(), keyBuilder);
-            final MsgKey msgKey = keyBuilder.build();
-            final MsgKey.EventType eventType = msgKey.getEventType();
-            // all 'MsgKey.Event' have the same schema for STATE_CHANGE types
+            final MsgKey key = MsgKey.parseFrom(record.key());
+            final MsgKey.EventType eventType = key.getEventType();
+            // no concatenation required for STATE_CHANGE event type
             final EventType eType = eventType.getNumber() == 2
                     ? EventType.valueOf(eventType.toString())
-                    : EventType.valueOf(msgKey.getEvent()+"_"+msgKey.getEventType());
-            Message.Builder valueBuilder;
+                    : EventType.valueOf(key.getEvent()+"_"+key.getEventType());
+            Message value;
 
             switch(eType) {
                 case BEGIN_BLOCK_REQUEST:
-                    valueBuilder = Types.RequestBeginBlock.newBuilder();
+                    value = Types.RequestBeginBlock.parseFrom(record.value());
                     break;
                 case BEGIN_BLOCK_RESPONSE:
-                    valueBuilder = Types.ResponseBeginBlock.newBuilder();
+                    value = Types.ResponseBeginBlock.parseFrom(record.value());
                     break;
                 case END_BLOCK_REQUEST:
-                    valueBuilder = Types.RequestEndBlock.newBuilder();
+                    value = Types.RequestEndBlock.parseFrom(record.value());
                     break;
                 case END_BLOCK_RESPONSE:
-                    valueBuilder = Types.ResponseEndBlock.newBuilder();
+                    value = Types.ResponseEndBlock.parseFrom(record.value());
                     break;
                 case DELIVER_TX_REQUEST:
-                    valueBuilder = Types.RequestDeliverTx.newBuilder();
+                    value = Types.RequestDeliverTx.parseFrom(record.value());
                     break;
                 case DELIVER_TX_RESPONSE:
-                    valueBuilder = Types.ResponseDeliverTx.newBuilder();
+                    value = Types.ResponseDeliverTx.parseFrom(record.value());
                     break;
                 case STATE_CHANGE:
-                    valueBuilder = Listening.StoreKVPair.newBuilder();
+                    value = Listening.StoreKVPair.parseFrom(record.value());
                     break;
                 default:
-                    throw new IllegalStateException("Unexpected value: " + eventType);
+                    throw new IllegalStateException("Unexpected event type combo: " + eType);
             }
 
-            JsonFormat.parser().merge(new String(record.value()), valueBuilder);
-            marshaller.mergeValue(record.value(), valueBuilder);
-            return new ProtoRecord(msgKey, valueBuilder.build());
+            return new ProtoRecord(key, value);
         } catch (Exception e) {
             throw new ConsumerRecordsHandlerException(e);
         }
