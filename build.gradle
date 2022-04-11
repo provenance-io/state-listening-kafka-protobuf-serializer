@@ -34,7 +34,8 @@ dependencies {
     implementation 'com.typesafe:config:1.4.2'
 
     // Kafka
-    implementation 'io.confluent:kafka-protobuf-serializer:7.0.1'
+    implementation 'io.confluent:kafka-streams-protobuf-serde:7.0.1'
+    implementation 'org.apache.kafka:kafka-streams:3.1.0'
 
     // Protobuf
     implementation 'io.provenance:proto-java:1.8.0'
@@ -45,6 +46,7 @@ dependencies {
     // Testing
     testImplementation(platform('org.junit:junit-bom:5.8.2'))
     testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation "org.apache.kafka:kafka-streams-test-utils:3.1.0"
 }
 
 
@@ -59,7 +61,7 @@ jar {
     manifest {
         attributes(
                 "Class-Path": configurations.compileClasspath.collect { it.getName() }.join(" "),
-                "Main-Class": "io.provenance.statelistening.kafka.protobuf.serializer.KafkaConsumerApplication"
+                "Main-Class": "io.provenance.statelistening.kafka.protobuf.serializer.KafkaStreamsApplication"
         )
     }
 }
@@ -72,5 +74,5 @@ shadowJar {
 application {
     mainClassName = project.hasProperty("mainClass")
             ? project.getProperty("mainClass")
-            : "io.provenance.statelistening.kafka.protobuf.serializer.KafkaConsumerApplication"
+            : "io.provenance.statelistening.kafka.protobuf.serializer.KafkaStreamsApplication"
 }

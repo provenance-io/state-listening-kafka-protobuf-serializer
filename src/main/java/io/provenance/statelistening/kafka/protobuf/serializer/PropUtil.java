@@ -1,4 +1,4 @@
-package io.provenance.statelistening.kafka.protobuf.serializer.util;
+package io.provenance.statelistening.kafka.protobuf.serializer;
 
 import com.typesafe.config.Config;
 import java.util.Properties;
@@ -6,10 +6,10 @@ import java.util.Properties;
 /**
  * Utility class
  */
-public final class Util {
+public final class PropUtil {
 
     /** */
-    private Util() {}
+    private PropUtil() {}
 
     /**
      * Convert typesafe configuration properties to {{Properties}}.
