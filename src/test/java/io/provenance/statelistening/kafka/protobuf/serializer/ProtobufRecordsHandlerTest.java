@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
@@ -22,7 +21,7 @@ public class ProtobufRecordsHandlerTest {
 
     private static final KafkaProtobufSerializer<Message> serde = new KafkaProtobufSerializer<>();
     private static final MockProducer<Message, Message> mockProducer = new MockProducer<>(true, serde, serde);
-    private static final ProtobufRecordsHandler recordsHandler = new ProtobufRecordsHandler(mockProducer);
+    private static final ProtobufByteArrayMapper protobufByteArrayMapper = new ProtobufByteArrayMapper();
     private final byte[] beginBlockReqKey   = getResourceAsBytes("begin-block-req-key.pb");
     private final byte[] beginBlockReqValue = getResourceAsBytes("begin-block-req-value.pb");
     private final byte[] beginBlockResKey   = getResourceAsBytes("begin-block-res-key.pb");
@@ -66,8 +65,8 @@ public class ProtobufRecordsHandlerTest {
     }
 
     @Test
-    public void testUnmarshall() {
-        consumerRecords.forEach(recordsHandler::unmarshall);
+    public void testProtobufByteArrayMapper() {
+        consumerRecords.forEach(record -> protobufByteArrayMapper.apply(record.key(), record.value()));
         assertTrue(true);
     }
 
