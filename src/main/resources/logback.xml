@@ -1,0 +1,12 @@
+<configuration>
+    <appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+        <!-- encoders are assigned the type
+             ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
+        <encoder>
+            <pattern>%d{YYYY-MM-dd HH:mm:ss.SSS} | %highlight(%-5level) | %gray(%-40logger{20}) | %-20thread{20} | MDC:[%mdc] | - %msg%n%xEx</pattern>
+        </encoder>
+    </appender>
+    <root level="info">
+        <appender-ref ref="${logging.appender:-stdout}"/>
+    </root>
+</configuration>

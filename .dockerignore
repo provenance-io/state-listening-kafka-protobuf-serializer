@@ -1,0 +1,36 @@
+# ignore build content
+build/
+
+# ignore gradle build scripts
+.gradle/
+gradle/
+gradlew
+gradlew.bat
+
+# ignore IntelliJ folder
+.idea
+
+# ignore github content
+.github/
+
+# ignore .git and .cache folders
+.git
+.gitignore
+.cache
+
+# ignore aws files
+.aws
+
+# ignore local environment files
+.env
+
+# ignore mac files
+.DS_STORE
+
+# ignore all markdown files (md) beside all README*.md other than README-secret.md
+*.md
+!CHANGELOG.md
+!CODE_OF_CONDUCT.md
+!CONTRIBUTING.md
+!README*.md
+README-secret.md
