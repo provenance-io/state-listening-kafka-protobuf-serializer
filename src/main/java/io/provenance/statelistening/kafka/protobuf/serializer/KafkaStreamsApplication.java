@@ -30,14 +30,14 @@ public class KafkaStreamsApplication {
     private static final String STREAMS_CONFIG_KEY = "app.kafka.streams";
     private static final Config conf = ConfigFactory.load();
 
-    private KafkaProtobufSerde<Message> protobufSerde(final boolean isKey) {
+    private KafkaProtobufSerde<Message> protobufSerde() {
         final KafkaProtobufSerde<Message> protobufSerde = new KafkaProtobufSerde<>();
         final String schemaRegistryUrlKey = AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG;
         final String schemaRegistryUrl = String.format("%s.%s", STREAMS_CONFIG_KEY, schemaRegistryUrlKey);
 
         Map<String, String> serdeConfig = new HashMap<>();
         serdeConfig.put(schemaRegistryUrlKey, conf.getString(schemaRegistryUrl));
-        protobufSerde.configure(serdeConfig, isKey);
+        protobufSerde.configure(serdeConfig, false);
         return protobufSerde;
     }
 
@@ -47,7 +47,7 @@ public class KafkaStreamsApplication {
         final Pattern inputTopicPattern = Pattern.compile(conf.getString(inputTopicFormat));
 
         // dynamic output topic
-        final TopicNameExtractor<Message, Message> topicNameExtractor =
+        final TopicNameExtractor<byte[], Message> topicNameExtractor =
                 (key, value, recordContext) -> String.format("proto-%s", recordContext.topic());
 
         final StreamsBuilder builder = new StreamsBuilder();
@@ -58,8 +58,8 @@ public class KafkaStreamsApplication {
 
         // unmarshal and write Protobuf data registering message schema
         protoStream
-                .map(new ProtobufByteArrayMapper())
-                .to(topicNameExtractor, Produced.with(protobufSerde(true), protobufSerde(false)));
+                .transform(ProtobufByteArrayMapper::new)
+                .to(topicNameExtractor, Produced.with(bytesSerde, protobufSerde()));
 
         return builder.build();
     }

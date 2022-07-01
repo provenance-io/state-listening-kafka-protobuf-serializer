@@ -66,7 +66,7 @@ public class ProtobufRecordsHandlerTest {
 
     @Test
     public void testProtobufByteArrayMapper() {
-        consumerRecords.forEach(record -> protobufByteArrayMapper.apply(record.key(), record.value()));
+        consumerRecords.forEach(record -> protobufByteArrayMapper.transform(record.key(), record.value()));
         assertTrue(true);
     }
 
