@@ -27,8 +27,8 @@ import java.util.regex.Pattern;
 public class KafkaStreamsApplication {
 
     private static final Logger logger = LoggerFactory.getLogger(KafkaStreamsApplication.class);
-    private static final String STREAMS_CONFIG_KEY = "app.kafka.streams";
-    private static final Config conf = ConfigFactory.load();
+    static final String STREAMS_CONFIG_KEY = "app.kafka.streams";
+    static final Config conf = ConfigFactory.load();
 
     private KafkaProtobufSerde<Message> protobufSerde() {
         final KafkaProtobufSerde<Message> protobufSerde = new KafkaProtobufSerde<>();
